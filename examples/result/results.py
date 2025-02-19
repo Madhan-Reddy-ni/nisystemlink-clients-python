@@ -60,9 +60,8 @@ created_result = client.get_result(create_response.results[0].id)
 
 # Query results without continuation
 query_request = QueryResultsRequest(
-    filter=f'programName="{program_name}" && hostName="{host_name}"',
-    return_count=True,
-    order_by=ResultField.HOST_NAME,
+    filter=f'programName="{program_name}" && status.statusType="Passed"',
+    return_count=True
 )
 response = client.query_results_paged(query_request)
 
