@@ -84,6 +84,3 @@ class Result(JsonModel):
 
     workspace: Optional[str]
     """The id of the workspace that this product belongs to."""
-
-    is_finalized: Optional[bool]
-    """Whether the result is finalized."""
