@@ -407,7 +407,9 @@ class TestTestMonitor:
         query_response: PagedResults = client.query_results(
             QueryResultsRequest(filter=query_results_filter)
         )
-        expected_results_dataframe = self.__get_expected_results_dataframe(query_response.results)
+        expected_results_dataframe = self.__get_expected_results_dataframe(
+            query_response.results
+        )
 
         results_dataframe = get_results_dataframe(
             client, query_filter=query_results_filter
@@ -438,7 +440,9 @@ class TestTestMonitor:
                 ],
             )
         )
-        expected_results_dataframe = self.__get_expected_results_dataframe(query_response.results)
+        expected_results_dataframe = self.__get_expected_results_dataframe(
+            query_response.results
+        )
 
         results_dataframe = get_results_dataframe(
             client,
