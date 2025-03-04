@@ -397,51 +397,52 @@ class TestTestMonitor:
     def test__get_results_dataframe_without_column_projection__returns_complete_results_dataframe(
         self, client: TestMonitorClient, create_results, unique_identifier
     ):
-        results = [
-            CreateResultRequest(
-                part_number=unique_identifier,
-                program_name="Test Program",
-                status=Status.PASSED(),
-                properties={"test": "test1"},
-            ),
-            CreateResultRequest(
-                part_number=unique_identifier,
-                program_name="Test Program",
-                status=Status.PASSED(),
-                properties={"test": "test1"},
-            ),
-        ]
-        create_results(results)
-
-        results_dataframe = get_results_dataframe(
-            client, query_filter=f'partNumber="{unique_identifier}"'
+        create_results_request = CreateResultRequest(
+            part_number=unique_identifier,
+            program_name="Test Program",
+            status=Status.PASSED()
         )
+        create_results([create_results_request, create_results_request])
+
+        query_results_filter = f'partNumber="{unique_identifier}"'
+        query_response: PagedResults = client.query_results(QueryResultsRequest(filter=query_results_filter))
+
+        expected_results_dataframe = self.__get_expected_results_dataframe(query_response.results)
+
+        results_dataframe = get_results_dataframe(client, query_filter=query_results_filter)
 
         assert not results_dataframe.empty
         assert isinstance(results_dataframe, pd.DataFrame)
-        for field in ResultProjection:
-            assert any(field.lower() in col for col in results_dataframe.columns)
+        assert len(results_dataframe) == 2
+        assert len(results_dataframe.columns.tolist()) == 22
+        pd.testing.assert_frame_equal(results_dataframe, expected_results_dataframe)
 
     def test__get_results_dataframe_with_column_projection__returns_dataframe_with_projected_columns(
         self, client: TestMonitorClient, create_results, unique_identifier
     ):
-        results = [
-            CreateResultRequest(
-                part_number=unique_identifier,
-                program_name="Test Program",
-                status=Status.PASSED(),
-            ),
-            CreateResultRequest(
-                part_number=unique_identifier,
-                program_name="Test Program",
-                status=Status.PASSED(),
-            ),
-        ]
-        create_results(results)
+        create_results_request = CreateResultRequest(
+            part_number=unique_identifier,
+            program_name="Test Program",
+            status=Status.PASSED()
+        )
+        create_results([create_results_request, create_results_request])
+
+        query_results_filter = f'partNumber="{unique_identifier}"'
+        query_response: PagedResults = client.query_results(QueryResultsRequest(
+            filter=query_results_filter,
+            projection=[
+                ResultProjection.PART_NUMBER,
+                ResultProjection.PROGRAM_NAME,
+            ]
+        ))
+
+        expected_results_dataframe = self.__get_expected_results_dataframe(query_response.results)
+
+        results_dataframe = get_results_dataframe(client, query_filter=query_results_filter)
 
         results_dataframe = get_results_dataframe(
             client,
-            query_filter=f'partNumber="{unique_identifier}"',
+            query_filter=query_results_filter,
             column_projection=[
                 ResultProjection.PART_NUMBER,
                 ResultProjection.PROGRAM_NAME,
@@ -450,9 +451,9 @@ class TestTestMonitor:
 
         assert not results_dataframe.empty
         assert isinstance(results_dataframe, pd.DataFrame)
-        assert ResultProjection.PART_NUMBER.lower() in results_dataframe.columns
-        assert ResultProjection.PROGRAM_NAME.lower() in results_dataframe.columns
-        assert ResultProjection.OPERATOR.lower() not in results_dataframe.columns
+        assert len(results_dataframe) == 2
+        assert len(results_dataframe.columns.tolist()) == 2
+        pd.testing.assert_frame_equal(results_dataframe, expected_results_dataframe)
 
     def test__get_results_dataframe_with_no_results__returns_empty_dataframe(
         self, client: TestMonitorClient, create_results, unique_identifier
@@ -471,3 +472,12 @@ class TestTestMonitor:
     ) -> UpdateResultRequest:
         result_dict = result.dict(exclude={"status_type_summary", "updated_at"})
         return UpdateResultRequest(**result_dict)
+
+    def __get_expected_results_dataframe(
+        self, results: List[Result]
+    ) -> List[dict]:
+        expected_results_dict = [result.dict(exclude_unset=True) for result in results]
+        expected_results_dataframe = pd.json_normalize(expected_results_dict, sep=".")
+        expected_results_dataframe.dropna(axis="columns", how="all", inplace=True)
+
+        return expected_results_dataframe

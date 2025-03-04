@@ -26,6 +26,10 @@ def get_results_dataframe(
 
     Returns:
         A Pandas DataFrame containing the results.
+
+    Raises:
+        ApiException: If unable to communicate with the ``/nitestmonitor`` service
+            or provided an invalid argument.
     """
     queried_results = __batch_query_results(client, query_filter, column_projection)
 
@@ -43,7 +47,7 @@ def __normalize_results(results: List[Result]) -> pd.DataFrame:
     Returns:
         A Pandas DataFrame with the normalized queried results.
     """
-    results_dict = [results.dict(exclude_unset=True) for results in results]
+    results_dict = [result.dict(exclude_unset=True) for result in results]
     normalized_dataframe = pd.json_normalize(results_dict, sep=".")
     normalized_dataframe.dropna(axis="columns", how="all", inplace=True)
 
