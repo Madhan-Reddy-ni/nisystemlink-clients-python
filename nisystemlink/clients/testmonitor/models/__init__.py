@@ -11,7 +11,7 @@ from ._query_results_request import (
     QueryResultsRequest,
     QueryResultValuesRequest,
     ResultField,
-    ResultProjection
+    ResultProjection,
 )
 
 # flake8: noqa

@@ -1,6 +1,7 @@
 import uuid
 from typing import List
 
+import pandas as pd
 import pytest
 from nisystemlink.clients.core._http_configuration import HttpConfiguration
 from nisystemlink.clients.testmonitor import TestMonitorClient
@@ -8,6 +9,7 @@ from nisystemlink.clients.testmonitor.models import (
     CreateResultRequest,
     CreateResultsPartialSuccess,
     Result,
+    ResultProjection,
     Status,
     UpdateResultRequest,
 )
@@ -17,6 +19,7 @@ from nisystemlink.clients.testmonitor.models._query_results_request import (
     QueryResultValuesRequest,
     ResultField,
 )
+from nisystemlink.clients.testmonitor.utilities import get_results_dataframe
 
 
 @pytest.fixture(scope="class")
@@ -390,6 +393,78 @@ class TestTestMonitor:
             updated_result.properties[original_key] == original_properties[original_key]
         )
         assert updated_result.properties[new_key] == new_properties[new_key]
+
+    def test__get_results_dataframe_without_column_projection__returns_complete_results_dataframe(
+        self, client: TestMonitorClient, create_results, unique_identifier
+    ):
+        results = [
+            CreateResultRequest(
+                part_number=unique_identifier,
+                program_name="Test Program",
+                status=Status.PASSED(),
+                properties={"test": "test1"},
+            ),
+            CreateResultRequest(
+                part_number=unique_identifier,
+                program_name="Test Program",
+                status=Status.PASSED(),
+                properties={"test": "test1"},
+            ),
+        ]
+        create_results(results)
+
+        results_dataframe = get_results_dataframe(
+            client, query_filter=f'partNumber="{unique_identifier}"'
+        )
+
+        assert not results_dataframe.empty
+        assert isinstance(results_dataframe, pd.DataFrame)
+        for field in ResultProjection:
+            assert any(field.lower() in col for col in results_dataframe.columns)
+
+    def test__get_results_dataframe_with_column_projection__returns_dataframe_with_projected_columns(
+        self, client: TestMonitorClient, create_results, unique_identifier
+    ):
+        results = [
+            CreateResultRequest(
+                part_number=unique_identifier,
+                program_name="Test Program",
+                status=Status.PASSED(),
+            ),
+            CreateResultRequest(
+                part_number=unique_identifier,
+                program_name="Test Program",
+                status=Status.PASSED(),
+            ),
+        ]
+        create_results(results)
+
+        results_dataframe = get_results_dataframe(
+            client,
+            query_filter=f'partNumber="{unique_identifier}"',
+            column_projection=[
+                ResultProjection.PART_NUMBER,
+                ResultProjection.PROGRAM_NAME,
+            ],
+        )
+
+        assert not results_dataframe.empty
+        assert isinstance(results_dataframe, pd.DataFrame)
+        assert ResultProjection.PART_NUMBER.lower() in results_dataframe.columns
+        assert ResultProjection.PROGRAM_NAME.lower() in results_dataframe.columns
+        assert ResultProjection.OPERATOR.lower() not in results_dataframe.columns
+
+    def test__get_results_dataframe_with_no_results__returns_empty_dataframe(
+        self, client: TestMonitorClient, create_results, unique_identifier
+    ):
+        invalid_part_number = unique_identifier
+
+        results_dataframe = get_results_dataframe(
+            client, query_filter=f'partNumber="{invalid_part_number}"'
+        )
+
+        assert isinstance(results_dataframe, pd.DataFrame)
+        assert results_dataframe.empty
 
     def __map_result_to_update_result_request(
         self, result: Result
