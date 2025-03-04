@@ -400,16 +400,22 @@ class TestTestMonitor:
         create_results_request = CreateResultRequest(
             part_number=unique_identifier,
             program_name="Test Program",
-            status=Status.PASSED()
+            status=Status.PASSED(),
         )
         create_results([create_results_request, create_results_request])
 
         query_results_filter = f'partNumber="{unique_identifier}"'
-        query_response: PagedResults = client.query_results(QueryResultsRequest(filter=query_results_filter))
+        query_response: PagedResults = client.query_results(
+            QueryResultsRequest(filter=query_results_filter)
+        )
 
-        expected_results_dataframe = self.__get_expected_results_dataframe(query_response.results)
+        expected_results_dataframe = self.__get_expected_results_dataframe(
+            query_response.results
+        )
 
-        results_dataframe = get_results_dataframe(client, query_filter=query_results_filter)
+        results_dataframe = get_results_dataframe(
+            client, query_filter=query_results_filter
+        )
 
         assert not results_dataframe.empty
         assert isinstance(results_dataframe, pd.DataFrame)
@@ -423,22 +429,28 @@ class TestTestMonitor:
         create_results_request = CreateResultRequest(
             part_number=unique_identifier,
             program_name="Test Program",
-            status=Status.PASSED()
+            status=Status.PASSED(),
         )
         create_results([create_results_request, create_results_request])
 
         query_results_filter = f'partNumber="{unique_identifier}"'
-        query_response: PagedResults = client.query_results(QueryResultsRequest(
-            filter=query_results_filter,
-            projection=[
-                ResultProjection.PART_NUMBER,
-                ResultProjection.PROGRAM_NAME,
-            ]
-        ))
+        query_response: PagedResults = client.query_results(
+            QueryResultsRequest(
+                filter=query_results_filter,
+                projection=[
+                    ResultProjection.PART_NUMBER,
+                    ResultProjection.PROGRAM_NAME,
+                ],
+            )
+        )
 
-        expected_results_dataframe = self.__get_expected_results_dataframe(query_response.results)
+        expected_results_dataframe = self.__get_expected_results_dataframe(
+            query_response.results
+        )
 
-        results_dataframe = get_results_dataframe(client, query_filter=query_results_filter)
+        results_dataframe = get_results_dataframe(
+            client, query_filter=query_results_filter
+        )
 
         results_dataframe = get_results_dataframe(
             client,
@@ -473,9 +485,7 @@ class TestTestMonitor:
         result_dict = result.dict(exclude={"status_type_summary", "updated_at"})
         return UpdateResultRequest(**result_dict)
 
-    def __get_expected_results_dataframe(
-        self, results: List[Result]
-    ) -> List[dict]:
+    def __get_expected_results_dataframe(self, results: List[Result]) -> List[dict]:
         expected_results_dict = [result.dict(exclude_unset=True) for result in results]
         expected_results_dataframe = pd.json_normalize(expected_results_dict, sep=".")
         expected_results_dataframe.dropna(axis="columns", how="all", inplace=True)
