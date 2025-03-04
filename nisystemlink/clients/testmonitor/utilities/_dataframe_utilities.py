@@ -16,11 +16,11 @@ def get_results_dataframe(
     query_filter: str,
     column_projection: Optional[List[ResultProjection]] = None,
 ) -> pd.DataFrame:
-    """Fetches results of a specific product and normalizes them into a Pandas DataFrame.
+    """Fetches test results and normalizes them into a Pandas DataFrame.
 
     Args:
-        client: The TestMonitorClient to fetch results data.
-        query_filter: The filter to use when querying the results.
+        client: The TestMonitorClient to use for the request.
+        query_filter: The result query filter in Dynamic Linq format.
         column_projection: List of columns to retrieve when querying the results.
             Fields you do not specify are excluded. Returns all fields if no value is specified.
 
@@ -28,7 +28,7 @@ def get_results_dataframe(
         A Pandas DataFrame containing the results.
 
     Raises:
-        ApiException: If unable to communicate with the ``/nitestmonitor`` service
+        ApiException: If unable to communicate with the `/nitestmonitor` service
             or provided an invalid argument.
     """
     queried_results = __batch_query_results(client, query_filter, column_projection)

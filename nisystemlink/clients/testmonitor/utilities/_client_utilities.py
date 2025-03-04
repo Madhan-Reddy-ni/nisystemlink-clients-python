@@ -16,16 +16,16 @@ def __batch_query_results(
     query_filter: str,
     column_projection: Optional[List[ResultProjection]] = None,
 ) -> List[Result]:
-    """Fetches results of a specific product in batches.
+    """Fetches test results in batches.
 
     Args:
-        client: The TestMonitorClient to fetch results data.
-        query_filter: The filter to use when querying the results.
+        client: The TestMonitorClient to use for the request.
+        query_filter: The result query filter in Dynamic Linq format.
         column_projection: List of columns to retrieve when querying the results.
             Fields you do not specify are excluded. Returns all fields if no value is specified.
 
     Returns:
-        List[Results]: A list of results.
+        A list of results.
     """
     all_results: List[Result] = []
     query_request = QueryResultsRequest(

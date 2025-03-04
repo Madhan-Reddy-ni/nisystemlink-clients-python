@@ -403,15 +403,11 @@ class TestTestMonitor:
             status=Status.PASSED(),
         )
         create_results([create_results_request, create_results_request])
-
         query_results_filter = f'partNumber="{unique_identifier}"'
         query_response: PagedResults = client.query_results(
             QueryResultsRequest(filter=query_results_filter)
         )
-
-        expected_results_dataframe = self.__get_expected_results_dataframe(
-            query_response.results
-        )
+        expected_results_dataframe = self.__get_expected_results_dataframe(query_response.results)
 
         results_dataframe = get_results_dataframe(
             client, query_filter=query_results_filter
@@ -432,7 +428,6 @@ class TestTestMonitor:
             status=Status.PASSED(),
         )
         create_results([create_results_request, create_results_request])
-
         query_results_filter = f'partNumber="{unique_identifier}"'
         query_response: PagedResults = client.query_results(
             QueryResultsRequest(
@@ -443,14 +438,7 @@ class TestTestMonitor:
                 ],
             )
         )
-
-        expected_results_dataframe = self.__get_expected_results_dataframe(
-            query_response.results
-        )
-
-        results_dataframe = get_results_dataframe(
-            client, query_filter=query_results_filter
-        )
+        expected_results_dataframe = self.__get_expected_results_dataframe(query_response.results)
 
         results_dataframe = get_results_dataframe(
             client,
