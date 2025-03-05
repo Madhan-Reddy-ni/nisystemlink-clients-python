@@ -419,7 +419,7 @@ class TestTestMonitor:
         assert isinstance(results_dataframe, pd.DataFrame)
         assert len(results_dataframe) == 2
         assert len(results_dataframe.columns.tolist()) == 22
-        pd.testing.assert_frame_equal(results_dataframe, expected_results_dataframe)
+        assert results_dataframe.equals(expected_results_dataframe)
 
     def test__get_results_dataframe_with_column_projection__returns_dataframe_with_projected_columns(
         self, client: TestMonitorClient, create_results, unique_identifier
@@ -457,7 +457,7 @@ class TestTestMonitor:
         assert isinstance(results_dataframe, pd.DataFrame)
         assert len(results_dataframe) == 2
         assert len(results_dataframe.columns.tolist()) == 2
-        pd.testing.assert_frame_equal(results_dataframe, expected_results_dataframe)
+        assert results_dataframe.equals(expected_results_dataframe)
 
     def test__get_results_dataframe_with_no_results__returns_empty_dataframe(
         self, client: TestMonitorClient, create_results, unique_identifier

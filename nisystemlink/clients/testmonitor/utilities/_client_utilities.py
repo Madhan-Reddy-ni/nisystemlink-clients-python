@@ -6,9 +6,7 @@ from nisystemlink.clients.testmonitor.models import (
     Result,
     ResultProjection,
 )
-from nisystemlink.clients.testmonitor.utilities._constants import (
-    DEFAULT_QUERY_RESULTS_TAKE,
-)
+from nisystemlink.clients.testmonitor.utilities._constants import HttpConstants
 
 
 def __batch_query_results(
@@ -31,7 +29,7 @@ def __batch_query_results(
     query_request = QueryResultsRequest(
         filter=query_filter,
         projection=column_projection,
-        take=DEFAULT_QUERY_RESULTS_TAKE,
+        take=HttpConstants.DEFAULT_QUERY_RESULTS_TAKE,
     )
 
     query_response = client.query_results(query_request)
